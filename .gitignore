@@ -1,0 +1,17 @@
+.env
+.idea
+*.retry
+
+#  Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+*.tfstat*
+
+# .tfvars files
+*.tfvars
+
+tfplan
+.DS_Store

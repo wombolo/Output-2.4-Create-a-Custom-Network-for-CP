@@ -1,0 +1,6 @@
+---
+db_user: postgres
+db_name: merry-ah
+db_password: point_god
+
+update_apt_cache: true

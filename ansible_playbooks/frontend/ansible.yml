@@ -1,0 +1,144 @@
+---
+- hosts: all
+  become: true
+  remote_user: ubuntu
+
+  vars:
+    NODEJS_VERSION: 10
+    REPO_LINK: https://github.com/andela/merry-ah-frontend.git
+    REPO_LOCAL: /home/ubuntu/authors_haven
+    APP_ENV: |
+      CLOUDINARY_API = 199196371633358
+      BACKEND_API=http://10.1.2.3/api/v1
+
+
+  tasks:
+    - name: Update cache
+      apt:
+        update_cache: yes
+
+    #Install NGINX
+    - name: Installing nginx
+      apt:
+        name: nginx
+        state: latest
+
+
+    # Start the NGINX service after installation
+    - name: ensure NGINX is running
+      service:
+        name: nginx
+        state: started
+
+
+    # Start the NGINX service on boot
+    - name: start nginx on boot
+      service: name=nginx state=started enabled=yes
+
+    #  Install NodeJS
+    - name: Add gpg key for NodeJS LTS
+      apt_key:
+        url: "https://deb.nodesource.com/gpgkey/nodesource.gpg.key"
+        state: present
+
+    - name: Install NodeJS Repo
+      apt_repository:
+        repo: "deb https://deb.nodesource.com/node_{{ NODEJS_VERSION }}.x {{ ansible_distribution_release }} main"
+        state: present
+        update_cache: yes
+
+    - name: Install Node.JS
+      apt:
+        name: nodejs
+        state: present
+
+    - name: Clone app from Github
+      git:
+        repo: "{{ REPO_LINK }}"
+        dest: "{{ REPO_LOCAL }}"
+        clone: yes
+        version: demo
+
+
+    - name: Make REPO_LOCAL folder writable
+      file:
+        path: "{{ REPO_LOCAL }}"
+        mode: u=rwX,g=rwX,o=rwX
+
+
+    - name: Create .env file for app
+      command: |
+        bash -c 'cat > {{ REPO_LOCAL }}/.env <<EOF
+          {{ APP_ENV }}
+        EOF'
+
+
+    - name: install NPM dependencies
+      shell: |
+        npm install node-pre-gyp -ES --unsafe-perm=true
+
+      args:
+        chdir: "{{ REPO_LOCAL }}"
+
+
+
+    - name: run NPM build
+      shell: |
+        npm run-script build
+      args:
+        chdir: "{{ REPO_LOCAL }}"
+
+
+    # Install PM2 for automatic app startup & monitoring
+    - name: Install PM2
+      command: npm install -g pm2
+
+
+    # use pm2 to startup app
+    # configure pm2 to run app as a service
+    - name: Run & configure pm2
+      shell: |
+        pm2 start npm -- start
+        pm2 startup
+        env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u ubuntu --hp /home/ubuntu
+      args:
+        chdir: "{{ REPO_LOCAL }}"
+
+    #Disable NGINX default config
+    - name: Disable NGINX default config
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      ignore_errors: yes
+
+    - name: Create NGINX config with custom config
+      command: |
+        bash -c 'cat > /etc/nginx/sites-available/authors_haven_nginx.conf <<EOF
+          server {
+                listen 80;
+                listen [::]:80;
+                index index.html index.htm index.nginx-debian.html;
+                location / {
+                        proxy_pass http://127.0.0.1:5000;
+                        try_files $uri $uri/ =404;
+                }
+            }
+        EOF'
+
+
+
+
+    - name: Create symbolic link to enable authors_haven_nginx.conf
+      file:
+        src: /etc/nginx/sites-available/authors_haven_nginx.conf
+        dest: /etc/nginx/sites-enabled/authors_haven_nginx.conf
+        state: link
+      notify:
+        - restart nginx
+
+
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted

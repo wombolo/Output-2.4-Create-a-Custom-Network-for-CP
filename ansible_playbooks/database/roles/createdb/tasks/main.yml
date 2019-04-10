@@ -1,0 +1,65 @@
+---
+  - name: Update cache
+    apt:
+      update_cache: yes
+
+
+  # Update packages to latest version
+  - name: Ensure bash, OpenSSl, and libssl are the latest versions
+    apt: name={{ item }} update_cache=true state=latest
+    with_items:
+      - bash
+      - openssl
+      - libssl-dev
+      - libssl-doc
+    tags: packages
+
+
+#  Install PostgreSQL
+  - name: Install PostgreSQL
+    apt: name={{ item }} update_cache={{ update_apt_cache }} state=present
+    with_items:
+      - postgresql
+      - postgresql-contrib
+      - libpq-dev
+      - python-psycopg2
+    tags: packages
+    notify:
+      - restart postgresql
+
+
+#  Create database
+  - name: Create database
+    sudo_user: postgres
+    postgresql_db: name={{ db_name }}
+      encoding='UTF-8'
+      lc_collate='en_US.UTF-8'
+      lc_ctype='en_US.UTF-8'
+      template='template0'
+      state=present
+
+#  Ensure user has access to the database
+  - name: Ensure user has access to the database
+    sudo_user: postgres
+    postgresql_user: db={{ db_name }}
+      name={{ db_user }}
+      password={{ db_password }}
+      priv=ALL
+
+
+
+  # Configure postgreSQL to allow connection from any source
+
+  - name: Edit postgresql.conf file
+    shell: |
+      sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/gi" /etc/postgresql/10/main/postgresql.conf
+      systemctl restart postgresql
+
+
+# Modify pg_hba config file to allow no ssl connection
+  - name: Edit pg host based authentication file
+    shell: |
+      echo "host  all  all  0.0.0.0/0  md5" >> /etc/postgresql/10/main/pg_hba.conf
+    notify:
+      - restart postgresql
+
