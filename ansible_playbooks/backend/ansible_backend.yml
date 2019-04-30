@@ -8,6 +8,7 @@
     REPO_LINK: https://github.com/andela/merry-ah-backend.git
     REPO_LOCAL: /home/ubuntu/authors_haven_api
     APP_ENV: |
+      DATABASE_URL= postgres://postgres:point_god@DBLINK:5432/merry-ah
       DB_HOST=127.0.0.1
       PORT=8000
       SECRET=GFT&&yyuytufyt$%TRE%$WRERFYTFHJGMFG
@@ -16,14 +17,9 @@
       DB_NAME=merry-ah
       DB_NAME_TEST=merry-ah-test
       DB_USER=postgres
-      DB_PASSWORD=point_god
       DEFAULT_ARTICLE_IMAGE='https://images.pexels.com/photos/1047540/pexels-photo-1047540.jpeg?dl&fit=crop&crop=entropy&w=1280&h=853'
       PASSWORD=12345
-
-      
       APP_BASE_URL=authorshaven.cf
-
-
 
 
   tasks:
