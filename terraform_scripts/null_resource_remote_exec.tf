@@ -7,7 +7,7 @@ resource "null_resource" "connect_to_api_backend_instance" {
     agent    = true
   }
 
-//  Forward Port 5432 on backend instance to DB instance
+//  Forward Port 5432 on backend instance to DB instance:5432
 //  Update DB host on backend instance
 
   provisioner "remote-exec" {
@@ -23,7 +23,7 @@ resource "null_resource" "connect_to_api_backend_instance" {
       "sudo iptables-save | sudo tee /etc/iptables.up.rules",
 
       "cd /home/ubuntu/authors_haven_api",
-      "sed -i 's/DB_HOST=127.0.0.1/DB_HOST=${aws_instance.database_instance.private_ip}/g' .env",
+      "sed -i 's/DBLINK/${aws_instance.database_instance.private_ip}/g' .env",
       "sudo npm run-script build",
       "pm2 start npm -- start",
       "sudo systemctl restart nginx",

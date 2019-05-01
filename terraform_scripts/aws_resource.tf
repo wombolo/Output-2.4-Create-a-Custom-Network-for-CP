@@ -1,7 +1,7 @@
 # aws_resource.tf
 
 provider "aws" {
-  //Access Keys are gotten from ~/.aws directory
+  //Access Keys are automaticallygotten from ~/.aws directory
   region     = "${var.aws_region}"
 }
 
@@ -11,7 +11,7 @@ resource "aws_key_pair" "my_key" {
 }
 
 
-//Launch bastion host instance
+//Configure & Launch bastion host instance
 resource "aws_instance" "bastion-host" {
   ami = "${var.bastion-ami-id}"
   instance_type = "t2.micro"
@@ -28,10 +28,12 @@ resource "aws_instance" "bastion-host" {
     Name = "bastion-host_Authors_haven"
   }
 
+
+  //Configure the bastion host as a port forwarder for incoming traffic going to the backend
   provisioner "remote-exec" {
     connection {
       type = "ssh"
-      user     = "ubuntu"
+      user = "ubuntu"
     }
 
     inline = [
@@ -64,7 +66,7 @@ resource "aws_instance" "database_instance" {
   }
 }
 
-
+//Launch backend_instance
 resource "aws_instance" "backend_instance" {
   ami = "${data.aws_ami.backend_ami.id}"
   instance_type = "t2.micro"
