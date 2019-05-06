@@ -13,7 +13,7 @@ current_progress(){
 run_terraform_destroy(){
     current_progress "Running Terraform Destroy"
     cd terraform_scripts
-    terraform destroy -auto-approve -lock=false tfplan
+    terraform destroy -auto-approve -lock=false
 }
 
 main(){

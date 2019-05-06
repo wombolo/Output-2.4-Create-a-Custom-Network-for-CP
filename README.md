@@ -90,16 +90,44 @@ In order to allow terraform have access to AWS.
 
 The script creates machine images for the frontend, backend and database instances. It also ensures the frontend instance is launched into the public subnet, while the backend and database instances are launched into the private subnet in order to prevent access to them from the internet.
 
+#### Proof of resources created
+**Note**: To access the `Services` menu, peep the top bar navigation menu on the AWS console dashboard and you will see the Services link, 
+click on it and a mega-menu of links will be opened.
+
+* Amazon Machine Images that have been created by Packer build. This can be viewed at `Services > EC2` in the mega-menu. Then click on `AMIs` in the left sidebar.
+  ![](media/Screenshot%202019-05-06%20at%2010.03.27%20AM.png)
+
+* VPC named `Output-2.2-VPC` has been created by Terraform. This can be viewed at `Services > VPC` in the mega-menu. Then click on `Your VPCs` in the left sidebar.
+  ![](media/Screenshot%202019-05-06%20at%2010.04.27%20AM.png)
+
+* Subnets highlighted under the VPC `Output-2.2-VPC` have been created by Terraform. This can be viewed at `Services > VPC` in the mega-menu. Then click on `Subnets` in the left sidebar.
+  ![](media/Screenshot%202019-05-06%20at%2010.04.48%20AM.png)
+
+* EC2 instances have been launched by terraform from machine images built and have status _`running`_. This can be viewed at `Services > EC2` in the mega-menu. Then click on `Instances` in the left sidebar.
+  ![](media/Screenshot%202019-05-06%20at%2010.03.14%20AM.png)
+
+* Lastly the frontend application can be viewed in the browser via `35.180.247.46`   
+  ![](media/Screenshot%202019-05-06%20at%2010.35.02%20AM.png)
+
+
 ### How to destroy Infrastructure built.
-In order to manage resources, after successfully building & experimenting, its essential to destroy the infrastructure. 
+In order to manage resources, after successfully building & experimenting, its essential to destroy the infrastructure to conserve resources. 
 To do that,
 - Ensure the shell script is executable by running `chmod u+x destroy_authors_haven.sh`. 
 - Run the command `./destroy_authors_haven.sh`.
 
+#### Proof of resources destroyed
+* Amazon Machine Images created are no longer present. This can be viewed at `Services > EC2` in the mega-menu. Then click on `AMIs` in the left sidebar.
+
+* VPC named `Output-2.2-VPC` created are no longer present. This can be viewed at `Services > VPC` in the mega-menu. Then click on `Your VPCs` in the left sidebar.
+
+* Subnets highlighted under the VPC `Output-2.2-VPC` created are no longer present. This can be viewed at `Services > VPC` in the mega-menu. Then click on `Subnets` in the left sidebar.
+
+* Instances launched by terraform from AMI's and have status _`terminated`_. This can be viewed at `Services > EC2` in the mega-menu. Then click on `Instances` in the left sidebar.
 
 ### Technology and Platforms Used
 
-- [AWS](aws.amazon.com)
+- [AWS](https://aws.amazon.com)
 - [Packer](https://www.packer.io)
 - [Ansible](https://www.ansible.com/)
 - [Terraform](https://www.terraform.io)
